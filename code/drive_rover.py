@@ -39,20 +39,23 @@ ground_truth_3d = np.dstack((ground_truth*0, ground_truth*255, ground_truth*0)).
 class RoverState():
     def __init__(self):
         self.start_time = None # To record the start time of navigation
-        self.total_time = None # To record total duration of naviagation
+        self.total_time = None # To record total duration of navigation
         self.img = None # Current camera image
         self.pos = None # Current position (x, y)
         self.yaw = None # Current yaw angle
         self.pitch = None # Current pitch angle
         self.roll = None # Current roll angle
-        self.vel = None # Current velocity
+        self.vel = 0 # Current velocity
+        self.prev_vel = 0 # Previous velocity
         self.steer = 0 # Current steering angle
         self.throttle = 0 # Current throttle value
         self.brake = 0 # Current brake value
         self.nav_angles = None # Angles of navigable terrain pixels
         self.nav_dists = None # Distances of navigable terrain pixels
+        self.front_nav_dist = None # Mean distance in front of the rover
         self.ground_truth = ground_truth_3d # Ground truth worldmap
         self.mode = 'forward' # Current mode (can be forward or stop)
+        self.prev_mode = None	# Previous mode
         self.throttle_set = 0.2 # Throttle setting when accelerating
         self.brake_set = 10 # Brake setting when braking
         # The stop_forward and go_forward fields below represent total count
@@ -76,6 +79,18 @@ class RoverState():
         self.near_sample = 0 # Will be set to telemetry value data["near_sample"]
         self.picking_up = 0 # Will be set to telemetry value data["picking_up"]
         self.send_pickup = False # Set to True to trigger rock pickup
+        self.future_pos = None # Estimated future position
+        self.memory = None # Memory measurement
+        self.turn_counter = 0 # To check if we did a 360 turn
+        self.rock_detected = False # Near rock
+        self.rock_pos = None # detected rock pos
+        self.posmap = np.zeros((200, 200), dtype=np.float) 
+        self.forget = False
+        self.forget_time = 0
+        self.start_yaw = None
+        self.delta_yaw = 0
+        self.aux = None
+        self.aux2 = None
 # Initialize our rover 
 Rover = RoverState()
 
@@ -135,7 +150,9 @@ def telemetry(sid, data):
         if args.image_folder != '':
             timestamp = datetime.utcnow().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
             image_filename = os.path.join(args.image_folder, timestamp)
-            image.save('{}.jpg'.format(image_filename))
+            #image.save('{}.jpg'.format(image_filename))
+            out_image = Image.open(BytesIO(base64.b64decode(out_image_string2)))
+            out_image.save('{}.jpg'.format(image_filename))
 
     else:
         sio.emit('manual', data={}, skip_sid=True)
