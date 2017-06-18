@@ -12,13 +12,13 @@ def decision_step(Rover):
     # Example:
     # Check if we have vision data to make decisions with
     if Rover.nav_angles is not None:
-        Rover.aux2 = Rover.delta_yaw
+        #Rover.aux2 = Rover.delta_yaw
         #if Rover.rock_detected:
         #    Rover.mode = 'pick'
         # Check for Rover.mode status
         if Rover.mode == 'forward': 
             # Check the extent of navigable terrain
-            if (len(Rover.nav_angles) >= Rover.stop_forward) & (Rover.front_nav_dist > 2):  
+            if (len(Rover.nav_angles) >= Rover.stop_forward) & (Rover.front_nav_dist > 2):  	# distancia puede ser nan o none
                 # If mode is forward, navigable terrain looks good 
                 # and velocity is below max, then throttle 
                 if Rover.vel < Rover.max_vel:
@@ -28,25 +28,9 @@ def decision_step(Rover):
                     Rover.throttle = 0
                 Rover.brake = 0
                 # Set steering to average angle clipped to the range +/- 15
-                if Rover.memory is not None:
-                    if (Rover.memory < 5) | ((Rover.total_time - Rover.forget_time) < 20):
-                        Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
-                    else:
-                        minisx, minisy = search_spot(Rover)
-                        if minisx is not None:
-                            diff = minisx[0] - Rover.pos[0], minisy[0] - Rover.pos[1]
-                            if diff[0] >=0 :
-                                yaw = np.tan(diff[1]/diff[0])*180/np.pi
-                            else:
-                                yaw = np.tan(diff[1]/diff[0])*180/np.pi + 180
-                            Rover.steer = np.clip(yaw, -15, 15)
-                        else:
-                            Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
-                        #Rover.mode = 'turn'
-                else:
-                    Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
+                Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
             # If there's a lack of navigable terrain pixels then go to 'stop' mode
-            elif (len(Rover.nav_angles) < Rover.stop_forward) | (Rover.vel<0.2):
+            elif (len(Rover.nav_angles) < Rover.stop_forward) | (Rover.front_nav_dist < 1):
                     # Set mode to "stop" and hit the brakes!
                     Rover.throttle = 0
                     # Set brake to stored brake value

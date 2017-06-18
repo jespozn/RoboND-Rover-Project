@@ -135,18 +135,17 @@ def create_output_images(Rover):
                   cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
       cv2.putText(map_add,"Fidelity: "+str(fidelity)+'%', (0, 40), 
                   cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
-#       cv2.putText(map_add,"Rocks: "+str(Rover.samples_found), (0, 55), 
+      cv2.putText(map_add,"Rocks: "+str(Rover.samples_found), (0, 55), 
+                   cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
+      cv2.putText(map_add,"Front: "+str(np.round(Rover.front_nav_dist, 1)), (0, 70), 
+                  cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
+#       cv2.putText(map_add,"Max: "+str(Rover.aux), (0, 85), 
 #                   cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
-      cv2.putText(map_add,"Front: "+str(Rover.front_nav_dist), (0, 70), 
-                  cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
-      cv2.putText(map_add,"Nav: "+str(Rover.aux), (0, 85), 
-                  cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
-      cv2.putText(map_add,"Max: "+str(Rover.aux2), (0, 55), 
-                  cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
+#       cv2.putText(map_add,"Max: "+str(Rover.aux2), (0, 55), 
+#                   cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)
       cv2.putText(map_add,"Mode: "+ Rover.mode, (100, 10), 
                   cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1)  
-      cv2.putText(map_add,"Wait: "+str(np.round(Rover.total_time-Rover.forget_time, 1)), (100, 25), 
-                  cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 255, 255), 1) 
+
 
       # Convert map and vision image to base64 strings for sending to server
       pil_img = Image.fromarray(map_add.astype(np.uint8))

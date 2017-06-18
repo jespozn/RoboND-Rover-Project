@@ -167,55 +167,32 @@ def perception_step(Rover):
         # Example: Rover.worldmap[obstacle_y_world, obstacle_x_world, 0] += 1
         #          Rover.worldmap[rock_y_world, rock_x_world, 1] += 1
         #          Rover.worldmap[navigable_y_world, navigable_x_world, 2] += 1
-    #pos = Rover.worldmap[:,:,2].nonzero()
-    #world = np.zeros_like(Rover.worldmap[:,:,0])
-    #world[pos] = True
-#     new_map = np.zeros_like(Rover.worldmap[:,:,0])
-#     new_map[g_y_pix_world, g_x_pix_world] = 1
-#     bin_img = (Rover.worldmap[:,:,2] > 0) & (new_map > 0)
-#     Rover.aux = len(bin_img.nonzero()[0]) / len(new_map.nonzero()[0]) * 100
-#     print('Match = ', len(bin_img.nonzero()[0]), ' new_map = ', len(new_map.nonzero()[0]),\
-#      ' old = ', len((Rover.worldmap[:,:,2].nonzero()[0])) )
-#     print('Percent = ', Rover.aux, ' %')
-    thresh = 2
-    if ((Rover.pitch < thresh) | (Rover.pitch > (360-thresh))) & ((Rover.roll < thresh) | (Rover.roll > (360-thresh))):
+    # Threshold for selecting transformed images for mapping
+    pitch_thresh = 1	#deg
+    roll_thresh = 1.5	#deg
+    if ((Rover.pitch < pitch_thresh) | (Rover.pitch > (360-pitch_thresh))) & ((Rover.roll < roll_thresh) | (Rover.roll > (360-roll_thresh))):
         Rover.worldmap[o_y_pix_world, o_x_pix_world, 0] += 1
-        #Rover.worldmap[r_y_pix_world, r_x_pix_world, 1] += 1
+        Rover.worldmap[r_y_pix_world, r_x_pix_world, 1] += 1
         Rover.worldmap[g_y_pix_world, g_x_pix_world, 2] += 1
-
     # 8) Convert rover-centric pixel positions to polar coordinates
     # Update Rover pixel distances and angles
         # Rover.nav_dists = rover_centric_pixel_distances
         # Rover.nav_angles = rover_centric_angles
-    
     Rover.nav_dist, Rover.nav_angles = to_polar_coords(ground_xpix, ground_ypix)
-    front = np.absolute(Rover.nav_angles) < (2 * np.pi/180)
-    Rover.front_nav_dist = np.mean(Rover.nav_dist[front])/10
-    if np.isnan(Rover.front_nav_dist):
-        Rover.front_nav_dist = 0
-    Rover.aux = len(Rover.nav_angles)
-        
-    Rover.posmap[round(Rover.pos[1]), round(Rover.pos[0])] = 1
-    tpo = 2 # secs
-    coords = 40, 0	#Rover.vel*tpo*10+1, 0
-    Rover.future_pos = pix_to_world(coords[0], coords[1], Rover.pos[0], Rover.pos[1], Rover.yaw, 200, 10)
-    offset = 2 
-    Rover.memory = len(Rover.posmap[Rover.future_pos[1]-offset:Rover.future_pos[1]+offset,Rover.future_pos[0]-offset:Rover.future_pos[0]+offset].nonzero()[0])
-    Rover.aux = Rover.memory
-    Rover.worldmap[:,:,1] = Rover.posmap * 255
     
-        # Pick up rocks
-#         if rocks_xpix is not None:
-#             Rover.rock_pos = to_polar_coords(np.mean(rocks_xpix), np.mean(rocks_ypix))
-#             if ~np.isnan(Rover.rock_pos[0]):
-#                 Rover.rock_detected = True
-#             Rover.aux = Rover.rock_pos[1]
-#        offset = 2
-#         Rover.future_pos = pix_to_world(Rover.front_nav_dist*10*4, 0, Rover.pos[0], Rover.pos[1], Rover.yaw, 200, 10)
-#         if len(Rover.worldmap[Rover.future_pos[1]-offset:Rover.future_pos[1]+offset,Rover.future_pos[0]-offset:Rover.future_pos[0]+offset,0].nonzero()[0]) < 5:
-#             Rover.memory = len( Rover.worldmap[Rover.future_pos[1]-offset:Rover.future_pos[1]+offset,Rover.future_pos[0]-offset:Rover.future_pos[0]+offset,2].nonzero()[0] )
-#         else:
-#             Rover.memory = 16
-#         Rover.aux = Rover.memory
+    # Estimate distance to front obstacle in a FOV of 2º		test with 1º
+    # select points
+    if len(Rover.nav_angles) > 10: 
+        front = np.absolute(Rover.nav_angles) < (2 * np.pi/180)
+        dists = Rover.nav_dist[front]
+        if len(dists) > 10:
+        	Rover.front_nav_dist = np.max(dists)/10
+        else:
+        	Rover.front_nav_dist = 0
+    else:
+        Rover.front_nav_dist = 0
+        
+    #Rover.aux = Rover.front_nav_dist
+    #Rover.aux2 = 0
     
     return Rover
