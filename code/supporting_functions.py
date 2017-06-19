@@ -29,8 +29,6 @@ def update_rover(Rover, data):
                   Rover.total_time = tot_time
       # Print out the fields in the telemetry data dictionary
       #print(data.keys())
-      # Previous state velocity
-      Rover.prev_vel = Rover.vel
       # The current speed of the rover in m/s
       Rover.vel = convert_to_float(data["speed"])
       # The current position of the rover
@@ -51,8 +49,6 @@ def update_rover(Rover, data):
       Rover.picking_up = np.int(data["picking_up"])
       # Update number of rocks found
       Rover.samples_found = Rover.samples_to_find - np.int(data["sample_count"])
-      # Update previous mode
-      Rover.prev_mode = Rover.mode
 
       print('speed =',Rover.vel, 'position =', Rover.pos, 'throttle =', 
       Rover.throttle, 'steer_angle =', Rover.steer, 'near_sample:', Rover.near_sample, 

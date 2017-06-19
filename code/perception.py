@@ -20,7 +20,7 @@ def color_thresh(img, rgb_thresh=(160, 160, 160)):
     
 # Identify pixels below the threshold
 # Threshold of RGB < 160 does a nice job of identifying obstacle pixels only
-def obstacle_color_thresh(img, rgb_thresh=(160, 160, 160)):
+def obstacle_color_thresh(img, rgb_thresh=(70, 70, 70)):
     # Create an array of zeros same xy size as img, but single channel
     color_select = np.zeros_like(img[:,:,0])
     # Require that each pixel be above all three threshold values in RGB
@@ -169,7 +169,7 @@ def perception_step(Rover):
         #          Rover.worldmap[navigable_y_world, navigable_x_world, 2] += 1
     # Threshold for selecting transformed images for mapping
     pitch_thresh = 1	#deg
-    roll_thresh = 1.5	#deg
+    roll_thresh = 1.3	#deg
     if ((Rover.pitch < pitch_thresh) | (Rover.pitch > (360-pitch_thresh))) & ((Rover.roll < roll_thresh) | (Rover.roll > (360-roll_thresh))):
         Rover.worldmap[o_y_pix_world, o_x_pix_world, 0] += 1
         Rover.worldmap[r_y_pix_world, r_x_pix_world, 1] += 1
